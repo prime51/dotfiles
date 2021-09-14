@@ -2,6 +2,39 @@
 
 " If you open this file in Vim, it'll be syntax highlighted for you.
 
+" Automatically install vim-plug
+let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
+if empty(glob(data_dir . '/autoload/plug.vim'))
+  silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+" Specify a directory for plugins
+" - For Neovim: stdpath('data') . '/plugged'
+" - Avoid using standard Vim directory names like 'plugin'
+call plug#begin('~/.vim/plugged')
+
+" Make sure you use single quotes
+
+Plug 'vim-scripts/indentpython.vim'
+Plug 'ycm-core/YouCompleteMe'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'tpope/vim-fugitive'
+Plug 'vim-syntastic/syntastic'
+Plug 'dhruvasagar/vim-zoom'
+Plug 'iamcco/markdown-preview.nvim'
+Plug 'wakatime/vim-wakatime'
+Plug 'bkad/CamelCaseMotion'
+Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-surround'
+Plug 'kien/ctrlp.vim'
+Plug 'preservim/nerdtree'
+
+" Initialize plugin system
+call plug#end()
+
+
 " Vim is based on Vi. Setting `nocompatible` switches from the default
 " Vi-compatibility mode and enables useful Vim functionality. This
 " configuration option turns out not to be necessary for the file named
@@ -63,6 +96,10 @@ set noerrorbells visualbell t_vb=
 " sometimes be convenient.
 set mouse+=a
 
+" Auto refresh the vim buffer
+set autoread
+set autowrite
+
 " Try to prevent bad habits like using the arrow keys for movement. This is
 " not the only possible bad habit. For example, holding down the h/j/k/l keys
 " for movement, rather than using more efficient movement commands, is also a
@@ -84,6 +121,13 @@ vnoremap <Right> <ESC>:echoe "Use l"<CR>
 vnoremap <Up>    <ESC>:echoe "Use k"<CR>
 vnoremap <Down>  <ESC>:echoe "Use j"<CR>
 
+" Remap 'jj' as '<Esc>' in insert mode
+inoremap jj <ESC>
+
+" Switch between tabs
+nnoremap <C-h>    :tabp<CR>
+nnoremap <C-l>    :tabn<CR>
+
 " Spaces & Tabs
 set tabstop=4       " number of visual spaces per TAB
 set softtabstop=4   " number of spaces in tab when editing
@@ -97,14 +141,39 @@ set cursorline
 set linebreak
 set hlsearch
 set scrolloff=12
+set listchars=tab:>-,trail:-
 
 " Jump to start and end of line using the home row keys
 map H ^
 map L $
 
+" yank to clipboard
+if has("clipboard")
+    set clipboard=unnamedplus " copy to the system clipboard
+endif
+
 " (Shift)Tab (de)indents code
 vnoremap <Tab> >
 vnoremap <S-Tab> <
+
+" Use actual TAB in Makefile
+autocmd FileType make setlocal noexpandtab
+
+" Spot and remove possible extraneous whitespaces
+highlight BadWhitespace ctermbg=red guibg=darkred
+au BufRead,BufNewFile *.py,*.pyw,*.c,*.h match BadWhitespace /\s\+$/
+au BufNewFile,BufRead *.js,*.html,*.css,*.vue
+\ set tabstop=2 |
+\ set softtabstop=2 |
+\ set shiftwidth=2
+autocmd BufWritePre *.py,*.pyw,*.c,*.h,*.js,*.html,*.css,*.vue :%s/\s\+$//
+
+" Open terminal in new tab
+nnoremap <Leader>t  :tab term ++close<CR>
+
+
+" Plugin settings
+"
 
 " ctrlp plugin
 let g:ctrlp_map = '<c-p>'
@@ -113,3 +182,44 @@ let g:ctrlp_cmd = 'CtrlP'
 " NERDTree plugin
 nnoremap <Leader>n :NERDTreeToggle<CR>
 nnoremap <Leader>f :NERDTreeFind<CR>
+
+" vim-commentary plugin
+autocmd FileType python setlocal commentstring=#\ %s
+
+" CamelCaseMotion plugin
+let g:camelcasemotion_key = '<leader>'
+
+" vim-airline plugin
+let g:airline_theme='wombat'
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#left_sep = ' '
+let g:airline#extensions#tabline#left_alt_sep = '|'
+let g:airline#extensions#tabline#formatter = 'default'
+
+" YouCompleteMe plugin
+let g:ycm_autoclose_preview_window_after_insertion = 1
+let g:ycm_goto_buffer_command = 'split-or-existing-window'
+nnoremap <F5>           :YcmForceCompileAndDiagnostics<CR>
+nnoremap <leader>gic    :YcmCompleter GoToInclude<CR>
+nnoremap <leader>gdc    :YcmCompleter GoToDeclaration<CR>
+nnoremap <leader>gdf    :YcmCompleter GoToDefinition<CR>
+nnoremap <leader>gip    :YcmCompleter GoToImprecise<CR>
+nnoremap <leader>f      :YcmCompleter FixIt<CR>
+
+let g:ycm_python_interpreter_path = ''
+let g:ycm_python_sys_path = []
+let g:ycm_extra_conf_vim_data = [
+  \  'g:ycm_python_interpreter_path',
+  \  'g:ycm_python_sys_path'
+  \]
+let g:ycm_global_ycm_extra_conf = '~/.ycm/global_extra_conf.py'
+
+" syntastic plugin
+" set statusline+=%#warningmsg#
+" set statusline+=%{SyntasticStatuslineFlag()}
+" set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
