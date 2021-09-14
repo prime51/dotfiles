@@ -1,0 +1,8 @@
+[core]
+	editor = vim
+[init]
+	defaultBranch = main
+[url "https://hub.fastgit.org"]
+	insteadOf = https://github.com
+[url "htpps://raw.staticdn.net"]
+	insteadOf = https://raw.githubusercontent.com
